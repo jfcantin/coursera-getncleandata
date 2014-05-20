@@ -1,5 +1,11 @@
 # Getting and cleaning data course project
 
+### TODO:
+* Replace activityId with textual factor
+* convert subjectId to a factor
+* review column names
+* create codebook
+
 
 ```r
 opts_chunk$set(cache = TRUE)
@@ -89,16 +95,52 @@ testActivity <- read.table(unz(zipFileName, testActivityFileName))
 
 
 
+```r
+# process features column names
+
+# clean up feature names
+setnames(feature, c("Id", "Name"))
+feature$Name <- gsub("^(t)", "Time", feature$Name)
+feature$Name <- gsub("^(f)", "FreqDomain", feature$Name)
+feature$Name <- gsub("BodyBody", "Body", feature$Name)
+feature$Name <- gsub("BodyAcc", "BodyAcceleration", feature$Name)
+feature$Name <- gsub("GravityAcc", "GravityAcceleration", feature$Name)
+feature$Name <- gsub("Mag", "Magnitude", feature$Name)
+feature$Name <- gsub("Gyro", "Gyroscopic", feature$Name)
+feature$Name <- gsub("-mean\\(\\)", "-Mean", feature$Name)
+feature$Name <- gsub("-std\\(\\)", "-StdDev", feature$Name)
+# angle() fields are not included
 
 
+# add features to both training and test data sets
+setnames(train, feature$Name)
+setnames(test, feature$Name)
 
+# add activity to both training and test data sets (human readable)
+setnames(trainActivity, "ActivityId")
+setnames(testActivity, "ActivityId")
+train <- cbind(trainActivity, train)
+test <- cbind(testActivity, test)
 
-# files required for analysis one for train and one for test
-# activity_labels.txt - map activities to code
-# (test|train)/subject_train.txt contains the subject id for each observation
-# (test|train)/X_train.txt for the accelerometer vectors
-# (test|train)/y_train.txt activity code for each observations
-# (test|train)/
-# (test|train)
-# (test|train)
-# (test|train)
+# add subject to both training and test data sets (human readable)
+setnames(trainSubject, "SubjectId")
+setnames(testSubject, "SubjectId")
+train <- cbind(trainSubject, train)
+test <- cbind(testSubject, test)
+
+# merge both training and testing data set
+combined.df <- rbind(train, test)
+
+# subset to only mean and sd columns
+meanAndStdDevCols <- which(grepl("(-Mean|-StdDev)", colnames(combined.df)))
+meanAndStdDevCols <- c(1:2, meanAndStdDevCols)
+combinedSubset <- combined.df[, meanAndStdDevCols]
+
+# calculate the mean for all variables for each subject - activity
+combinedSubset <- data.table(combinedSubset)
+
+tidyData <- combinedSubset[, lapply(.SD, mean), by = list(SubjectId, ActivityId)]
+
+write.table(tidyData, "tidyData.txt", row.names = FALSE)
+```
+

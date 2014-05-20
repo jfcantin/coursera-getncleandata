@@ -1,5 +1,11 @@
 # Getting and cleaning data course project
 
+### TODO:
+* Replace activityId with textual factor
+* convert subjectId to a factor
+* review column names
+* create codebook
+
 ```{r "Initialization"}
 opts_chunk$set(cache=TRUE)
 rm(list=ls())
@@ -92,15 +98,3 @@ tidyData <- combinedSubset[,lapply(.SD,mean),by=list(SubjectId,ActivityId)]
 write.table(tidyData, "tidyData.txt", row.names=FALSE)
 
 ```
-
-
-
-# files required for analysis one for train and one for test
-# activity_labels.txt - map activities to code
-# (test|train)/subject_train.txt contains the subject id for each observation
-# (test|train)/X_train.txt for the accelerometer vectors
-# (test|train)/y_train.txt activity code for each observations
-# (test|train)/
-# (test|train)
-# (test|train)
-# (test|train)

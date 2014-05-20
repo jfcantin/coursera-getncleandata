@@ -174,12 +174,25 @@ hljs.initHighlightingOnLoad();
 </script>
 
 
+<!-- MathJax scripts -->
+<script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
 
 
 </head>
 
 <body>
 <h1>Getting and cleaning data course project</h1>
+
+<h3>TODO:</h3>
+
+<ul>
+<li>Replace activityId with textual factor</li>
+<li>convert subjectId to a factor</li>
+<li>review column names</li>
+<li>create codebook</li>
+</ul>
 
 <pre><code class="r">opts_chunk$set(cache = TRUE)
 rm(list = ls())
@@ -256,23 +269,53 @@ testSubject &lt;- read.table(unz(zipFileName, testSubjectFileName))
 testActivity &lt;- read.table(unz(zipFileName, testActivityFileName))
 </code></pre>
 
-<h1>files required for analysis one for train and one for test</h1>
+<pre><code class="r"># process features column names
 
-<h1>activity_labels.txt - map activities to code</h1>
+# clean up feature names
+setnames(feature, c(&quot;Id&quot;, &quot;Name&quot;))
+feature$Name &lt;- gsub(&quot;^(t)&quot;, &quot;Time&quot;, feature$Name)
+feature$Name &lt;- gsub(&quot;^(f)&quot;, &quot;FreqDomain&quot;, feature$Name)
+feature$Name &lt;- gsub(&quot;BodyBody&quot;, &quot;Body&quot;, feature$Name)
+feature$Name &lt;- gsub(&quot;BodyAcc&quot;, &quot;BodyAcceleration&quot;, feature$Name)
+feature$Name &lt;- gsub(&quot;GravityAcc&quot;, &quot;GravityAcceleration&quot;, feature$Name)
+feature$Name &lt;- gsub(&quot;Mag&quot;, &quot;Magnitude&quot;, feature$Name)
+feature$Name &lt;- gsub(&quot;Gyro&quot;, &quot;Gyroscopic&quot;, feature$Name)
+feature$Name &lt;- gsub(&quot;-mean\\(\\)&quot;, &quot;-Mean&quot;, feature$Name)
+feature$Name &lt;- gsub(&quot;-std\\(\\)&quot;, &quot;-StdDev&quot;, feature$Name)
+# angle() fields are not included
 
-<h1>(test|train)/subject_train.txt contains the subject id for each observation</h1>
 
-<h1>(test|train)/X_train.txt for the accelerometer vectors</h1>
+# add features to both training and test data sets
+setnames(train, feature$Name)
+setnames(test, feature$Name)
 
-<h1>(test|train)/y_train.txt activity code for each observations</h1>
+# add activity to both training and test data sets (human readable)
+setnames(trainActivity, &quot;ActivityId&quot;)
+setnames(testActivity, &quot;ActivityId&quot;)
+train &lt;- cbind(trainActivity, train)
+test &lt;- cbind(testActivity, test)
 
-<h1>(test|train)/</h1>
+# add subject to both training and test data sets (human readable)
+setnames(trainSubject, &quot;SubjectId&quot;)
+setnames(testSubject, &quot;SubjectId&quot;)
+train &lt;- cbind(trainSubject, train)
+test &lt;- cbind(testSubject, test)
 
-<h1>(test|train)</h1>
+# merge both training and testing data set
+combined.df &lt;- rbind(train, test)
 
-<h1>(test|train)</h1>
+# subset to only mean and sd columns
+meanAndStdDevCols &lt;- which(grepl(&quot;(-Mean|-StdDev)&quot;, colnames(combined.df)))
+meanAndStdDevCols &lt;- c(1:2, meanAndStdDevCols)
+combinedSubset &lt;- combined.df[, meanAndStdDevCols]
 
-<h1>(test|train)</h1>
+# calculate the mean for all variables for each subject - activity
+combinedSubset &lt;- data.table(combinedSubset)
+
+tidyData &lt;- combinedSubset[, lapply(.SD, mean), by = list(SubjectId, ActivityId)]
+
+write.table(tidyData, &quot;tidyData.txt&quot;, row.names = FALSE)
+</code></pre>
 
 </body>
 
