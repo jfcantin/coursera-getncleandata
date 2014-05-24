@@ -1,8 +1,24 @@
 # Getting and cleaning data course project
 
+The purpose of this project is to demonstrate your ability to collect, work with, and clean a data set. The goal is to prepare tidy data that can be used for later analysis. 
+
+### Project files description
+Readme.md - this file.
+codebook.md : Descrition of the variables and the data. Transformations or work that you performed to clean up the data called CodeBook.md. 
+run_analysis.Rmd : Main code file with all transformation and clean up operations documented.
+run_analysis.md : Knitted file including the code, the documentation and results.
+run_analysis.html : Knitted file including the code, the documentation and results 
+Same content as run_analysis.md but in html format.
+UCIDataReader.R : Helper function to download and read the UCI project data.
+tidyData.txt : Tidy dataset resulting from run_analysis.Rmd
+
+### How to rerun the analysis
+The analysis can be reproduced by sourcing the run_analysis.Rmd file.
+The run_analysis.Rmd file will the source all required files including UCIDataReader.R. 
+The run_analysis.Rmd file can also be re-knitted using knitr.
+
 The original data for the project is located here: 
 https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip 
-
 
 You should create one R script called run_analysis.R that does the following. 
 1. Merges the training and the test sets to create one data set.
@@ -22,31 +38,8 @@ Turn the activity numbers into words
 Fix the variable names 
 Create and save a version with an average of each variable for each activity and each subject. 
 
-#### Post 1.
-The consensus for all previous groups is that it was the information you created a mean for by subject/activity as this is the only data the step by step characterises as tidy. To go through it:
-
-Merges the training and the test sets to create one data set.
--Combine the data together
-
-Extracts only the measurements on the mean and standard deviation for each measurement. 
--Find the relevant columns and use them
-
-Uses descriptive activity names to name the activities in the data set
--Rename the numeric activity labels with names
-
-Appropriately labels the data set with descriptive activity names. 
-- Horrible wording that should get changed in the next run, but fix the column labels to describe what the column represents
-
-Creates a second, independent tidy data set with the average of each variable for each activity and each subject. 
--Create your summary data
-
-There is actually no tidy data set specified before this last step. I agree most people will be creating a new data set for stage 2-4, but you could do those steps operating on the original data (for instance deleting the columns where the name is not relevant).
-
-
-
 ### From the project instructions:
 
-The purpose of this project is to demonstrate your ability to collect, work with, and clean a data set. The goal is to prepare tidy data that can be used for later analysis. You will be graded by your peers on a series of yes/no questions related to the project.
 
 You will be required to submit:  
 1. a tidy data set as described below, 

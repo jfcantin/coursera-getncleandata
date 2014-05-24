@@ -8,7 +8,7 @@
 
 ```{r "Initialization"}
 library(knitr)
-opts_chunk$set(cache=TRUE)
+opts_chunk$set(cache=FALSE)
 rm(list=ls())
 ```
 
@@ -20,7 +20,7 @@ library(data.table)
 ```
 
 ### Download and read data
-```{r "Read Data"}
+```{r "Read Data", cache=TRUE}
 dataReader <- UCIDataReader()
 
 activityLabel <- dataReader$activityLabel 
@@ -58,26 +58,37 @@ setnames(train, feature$Name)
 setnames(test, feature$Name)
 
 # add activity to both training and test data sets (human readable)
+setnames(activityLabel, c("ActivityId", "Description"))
 setnames(trainActivity, "ActivityId")
 setnames(testActivity, "ActivityId")
+
+trainActivityName <- tolower(activityLabel[trainActivity$ActivityId,]$Description)
+testActivityName <- tolower(activityLabel[testActivity$ActivityId,]$Description)
+trainActivity <- as.data.frame(trainActivityName)
+testActivity <- as.data.frame(testActivityName)
+setnames(trainActivity, "Activity")
+setnames(testActivity, "Activity")
+
 train <- cbind(trainActivity, train)
 test <- cbind(testActivity, test)
 
-# add subject to both training and test data sets (human readable)
+# add subject to both training and test data sets
 setnames(trainSubject, "SubjectId")
 setnames(testSubject, "SubjectId")
 train <- cbind(trainSubject, train)
 test <- cbind(testSubject, test)
-
 # merge both training and testing data set
 combined.df <- rbind(train, test)
 
 ```
 
 ### Subset dataset
+Lots of features were provided by the raw dataset. 
+For this project only the non-axial processed signals are of interest.
+
 ```{r "subset dataset"}
-# subset to only mean and sd columns
-meanAndStdDevCols <- which(grepl("(-Mean|-StdDev)", colnames(combined.df)))
+# subset to only mean and sd columns of the magnitude features
+meanAndStdDevCols <- which(grepl("Magnitude(-Mean|-StdDev)", colnames(combined.df)))
 meanAndStdDevCols <- c(1:2,meanAndStdDevCols)
 combinedSubset <- data.table(combined.df[,meanAndStdDevCols])
 ```
@@ -85,7 +96,7 @@ combinedSubset <- data.table(combined.df[,meanAndStdDevCols])
 ### calculate the mean for all variables for each subject - activity
 
 ```{r "summarize at the subjet - activity level"}
-tidyData <- combinedSubset[,lapply(.SD,mean),by=list(SubjectId,ActivityId)]
+tidyData <- combinedSubset[,lapply(.SD,mean),by=list(SubjectId,Activity)]
 str(tidyData)
 head(tidyData)
 write.table(tidyData, "tidyData.txt", row.names=FALSE)
