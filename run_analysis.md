@@ -1,9 +1,6 @@
 # Getting and cleaning data course project
 
 ### TODO:
-* Replace activityId with textual factor
-* convert subjectId to a factor
-* review column names
 * create codebook
 
 
@@ -85,17 +82,20 @@ train <- cbind(trainSubject, train)
 test <- cbind(testSubject, test)
 # merge both training and testing data set
 combined.df <- rbind(train, test)
+combined.df$SubjectId <- as.factor(combined.df$SubjectId)
 ```
 
 
 ### Subset dataset
 Lots of features were provided by the raw dataset. 
 For this project only the non-axial processed signals are of interest.
+In order to comply with the only one type of date only the Time domain signals is retained.
 
 
 ```r
 # subset to only mean and sd columns of the magnitude features
-meanAndStdDevCols <- which(grepl("Magnitude(-Mean|-StdDev)", colnames(combined.df)))
+meanAndStdDevCols <- which(grepl("^(Time)[[:alnum:]]+Magnitude(-Mean|-StdDev)", 
+    colnames(combined.df)))
 meanAndStdDevCols <- c(1:2, meanAndStdDevCols)
 combinedSubset <- data.table(combined.df[, meanAndStdDevCols])
 ```
@@ -110,27 +110,19 @@ str(tidyData)
 ```
 
 ```
-## Classes 'data.table' and 'data.frame':	180 obs. of  20 variables:
-##  $ SubjectId                                     : int  1 1 1 1 1 1 3 3 3 3 ...
-##  $ Activity                                      : Factor w/ 6 levels "laying","sitting",..: 3 2 1 4 5 6 3 2 1 4 ...
-##  $ TimeBodyAccelerationMagnitude-Mean            : num  -0.9843 -0.9485 -0.8419 -0.137 0.0272 ...
-##  $ TimeBodyAccelerationMagnitude-StdDev          : num  -0.9819 -0.9271 -0.7951 -0.2197 0.0199 ...
-##  $ TimeGravityAccelerationMagnitude-Mean         : num  -0.9843 -0.9485 -0.8419 -0.137 0.0272 ...
-##  $ TimeGravityAccelerationMagnitude-StdDev       : num  -0.9819 -0.9271 -0.7951 -0.2197 0.0199 ...
-##  $ TimeBodyAccelerationJerkMagnitude-Mean        : num  -0.9924 -0.9874 -0.9544 -0.1414 -0.0894 ...
-##  $ TimeBodyAccelerationJerkMagnitude-StdDev      : num  -0.9931 -0.9841 -0.9282 -0.0745 -0.0258 ...
-##  $ TimeBodyGyroscopicMagnitude-Mean              : num  -0.9765 -0.9309 -0.8748 -0.161 -0.0757 ...
-##  $ TimeBodyGyroscopicMagnitude-StdDev            : num  -0.979 -0.935 -0.819 -0.187 -0.226 ...
-##  $ TimeBodyGyroscopicJerkMagnitude-Mean          : num  -0.995 -0.992 -0.963 -0.299 -0.295 ...
-##  $ TimeBodyGyroscopicJerkMagnitude-StdDev        : num  -0.995 -0.988 -0.936 -0.325 -0.307 ...
-##  $ FreqDomainBodyAccelerationMagnitude-Mean      : num  -0.9854 -0.9478 -0.8618 -0.1286 0.0966 ...
-##  $ FreqDomainBodyAccelerationMagnitude-StdDev    : num  -0.982 -0.928 -0.798 -0.398 -0.187 ...
-##  $ FreqDomainBodyAccelerationJerkMagnitude-Mean  : num  -0.9925 -0.9853 -0.9333 -0.0571 0.0262 ...
-##  $ FreqDomainBodyAccelerationJerkMagnitude-StdDev: num  -0.993 -0.982 -0.922 -0.103 -0.104 ...
-##  $ FreqDomainBodyGyroscopicMagnitude-Mean        : num  -0.985 -0.958 -0.862 -0.199 -0.186 ...
-##  $ FreqDomainBodyGyroscopicMagnitude-StdDev      : num  -0.978 -0.932 -0.824 -0.321 -0.398 ...
-##  $ FreqDomainBodyGyroscopicJerkMagnitude-Mean    : num  -0.995 -0.99 -0.942 -0.319 -0.282 ...
-##  $ FreqDomainBodyGyroscopicJerkMagnitude-StdDev  : num  -0.995 -0.987 -0.933 -0.382 -0.392 ...
+## Classes 'data.table' and 'data.frame':	180 obs. of  12 variables:
+##  $ SubjectId                               : Factor w/ 30 levels "1","2","3","4",..: 1 1 1 1 1 1 3 3 3 3 ...
+##  $ Activity                                : Factor w/ 6 levels "laying","sitting",..: 3 2 1 4 5 6 3 2 1 4 ...
+##  $ TimeBodyAccelerationMagnitude-Mean      : num  -0.9843 -0.9485 -0.8419 -0.137 0.0272 ...
+##  $ TimeBodyAccelerationMagnitude-StdDev    : num  -0.9819 -0.9271 -0.7951 -0.2197 0.0199 ...
+##  $ TimeGravityAccelerationMagnitude-Mean   : num  -0.9843 -0.9485 -0.8419 -0.137 0.0272 ...
+##  $ TimeGravityAccelerationMagnitude-StdDev : num  -0.9819 -0.9271 -0.7951 -0.2197 0.0199 ...
+##  $ TimeBodyAccelerationJerkMagnitude-Mean  : num  -0.9924 -0.9874 -0.9544 -0.1414 -0.0894 ...
+##  $ TimeBodyAccelerationJerkMagnitude-StdDev: num  -0.9931 -0.9841 -0.9282 -0.0745 -0.0258 ...
+##  $ TimeBodyGyroscopicMagnitude-Mean        : num  -0.9765 -0.9309 -0.8748 -0.161 -0.0757 ...
+##  $ TimeBodyGyroscopicMagnitude-StdDev      : num  -0.979 -0.935 -0.819 -0.187 -0.226 ...
+##  $ TimeBodyGyroscopicJerkMagnitude-Mean    : num  -0.995 -0.992 -0.963 -0.299 -0.295 ...
+##  $ TimeBodyGyroscopicJerkMagnitude-StdDev  : num  -0.995 -0.988 -0.936 -0.325 -0.307 ...
 ##  - attr(*, ".internal.selfref")=<externalptr>
 ```
 
@@ -202,62 +194,6 @@ head(tidyData)
 ## 4:                                -0.3253
 ## 5:                                -0.3065
 ## 6:                                -0.6486
-##    FreqDomainBodyAccelerationMagnitude-Mean
-## 1:                                 -0.98536
-## 2:                                 -0.94778
-## 3:                                 -0.86177
-## 4:                                 -0.12862
-## 5:                                  0.09658
-## 6:                                 -0.35240
-##    FreqDomainBodyAccelerationMagnitude-StdDev
-## 1:                                    -0.9823
-## 2:                                    -0.9284
-## 3:                                    -0.7983
-## 4:                                    -0.3980
-## 5:                                    -0.1865
-## 6:                                    -0.4163
-##    FreqDomainBodyAccelerationJerkMagnitude-Mean
-## 1:                                     -0.99254
-## 2:                                     -0.98526
-## 3:                                     -0.93330
-## 4:                                     -0.05712
-## 5:                                      0.02622
-## 6:                                     -0.44265
-##    FreqDomainBodyAccelerationJerkMagnitude-StdDev
-## 1:                                        -0.9925
-## 2:                                        -0.9816
-## 3:                                        -0.9218
-## 4:                                        -0.1035
-## 5:                                        -0.1041
-## 6:                                        -0.5331
-##    FreqDomainBodyGyroscopicMagnitude-Mean
-## 1:                                -0.9846
-## 2:                                -0.9584
-## 3:                                -0.8622
-## 4:                                -0.1993
-## 5:                                -0.1857
-## 6:                                -0.3260
-##    FreqDomainBodyGyroscopicMagnitude-StdDev
-## 1:                                  -0.9785
-## 2:                                  -0.9322
-## 3:                                  -0.8243
-## 4:                                  -0.3210
-## 5:                                  -0.3984
-## 6:                                  -0.1830
-##    FreqDomainBodyGyroscopicJerkMagnitude-Mean
-## 1:                                    -0.9948
-## 2:                                    -0.9898
-## 3:                                    -0.9424
-## 4:                                    -0.3193
-## 5:                                    -0.2820
-## 6:                                    -0.6347
-##    FreqDomainBodyGyroscopicJerkMagnitude-StdDev
-## 1:                                      -0.9947
-## 2:                                      -0.9870
-## 3:                                      -0.9327
-## 4:                                      -0.3816
-## 5:                                      -0.3919
-## 6:                                      -0.6939
 ```
 
 ```r

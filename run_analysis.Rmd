@@ -1,9 +1,6 @@
 # Getting and cleaning data course project
 
 ### TODO:
-* Replace activityId with textual factor
-* convert subjectId to a factor
-* review column names
 * create codebook
 
 ```{r "Initialization"}
@@ -79,16 +76,17 @@ train <- cbind(trainSubject, train)
 test <- cbind(testSubject, test)
 # merge both training and testing data set
 combined.df <- rbind(train, test)
-
+combined.df$SubjectId <- as.factor(combined.df$SubjectId)
 ```
 
 ### Subset dataset
 Lots of features were provided by the raw dataset. 
 For this project only the non-axial processed signals are of interest.
+In order to comply with the only one type of date only the Time domain signals is retained.
 
 ```{r "subset dataset"}
 # subset to only mean and sd columns of the magnitude features
-meanAndStdDevCols <- which(grepl("Magnitude(-Mean|-StdDev)", colnames(combined.df)))
+meanAndStdDevCols <- which(grepl("^(Time)[[:alnum:]]+Magnitude(-Mean|-StdDev)", colnames(combined.df)))
 meanAndStdDevCols <- c(1:2,meanAndStdDevCols)
 combinedSubset <- data.table(combined.df[,meanAndStdDevCols])
 ```
