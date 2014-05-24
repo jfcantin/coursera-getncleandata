@@ -14,43 +14,27 @@ rm(list=ls())
 
 
 ```{r}
+source("UCIDataReader.R")
 library(data.table)
+
 ```
 
-### Download data
-```{r}
-zipFileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-zipFileName <- "data//uci-har-dataset.zip"
-
-if(!file.exists(zipFileName)){
-    download.file(zipFileUrl, zipFileName, method="curl")
-}
-```
+### Download and read data
 ```{r "Read Data"}
-#list files in zipFile
-unzip(zipFileName, list=TRUE)$Name
+dataReader <- UCIDataReader()
 
-activityLabelFileName <- 'UCI HAR Dataset/activity_labels.txt'
-featureFileName <- 'UCI HAR Dataset/features.txt'
-trainFileName <- "UCI HAR Dataset/train/X_train.txt"
-trainSubjectFileName <- "UCI HAR Dataset/train/subject_train.txt"
-trainActivityFileName <- "UCI HAR Dataset/train/y_train.txt"
-testFileName <- "UCI HAR Dataset/test/X_test.txt"
-testSubjectFileName <- "UCI HAR Dataset/test/subject_test.txt"
-testActivityFileName <- "UCI HAR Dataset/test/y_test.txt"
-
-activityLabel <- read.table(unz(zipFileName, activityLabelFileName))
-feature <- read.table(unz(zipFileName, featureFileName))
-train <- read.table(unz(zipFileName, trainFileName))
-trainSubject <- read.table(unz(zipFileName, trainSubjectFileName))
-trainActivity <- read.table(unz(zipFileName, trainActivityFileName))
-test <- read.table(unz(zipFileName, testFileName))
-testSubject <- read.table(unz(zipFileName, testSubjectFileName))
-testActivity <- read.table(unz(zipFileName, testActivityFileName))
+activityLabel <- dataReader$activityLabel 
+feature <- dataReader$feature
+train <- dataReader$train
+trainSubject <- dataReader$trainSubject
+trainActivity <- dataReader$trainActivity
+test <- dataReader$test
+testSubject <- dataReader$testSubject
+testActivity <- dataReader$testActivity
 
 ```
 
-### process features column names
+### cleanup feature column names
 ```{r}
 # clean up feature names
 setnames(feature, c("Id", "Name"))
@@ -65,7 +49,10 @@ feature$Name <- gsub("-mean\\(\\)","-Mean", feature$Name)
 feature$Name <- gsub("-std\\(\\)","-StdDev", feature$Name)
 # angle() fields are not included
 
+```
 
+### Merging training and test dataset
+```{r "Merging training and test dataset"}
 # add features to both training and test data sets
 setnames(train, feature$Name)
 setnames(test, feature$Name)
@@ -85,20 +72,21 @@ test <- cbind(testSubject, test)
 # merge both training and testing data set
 combined.df <- rbind(train, test)
 
+```
+
+### Subset dataset
+```{r "subset dataset"}
 # subset to only mean and sd columns
 meanAndStdDevCols <- which(grepl("(-Mean|-StdDev)", colnames(combined.df)))
 meanAndStdDevCols <- c(1:2,meanAndStdDevCols)
-combinedSubset <- combined.df[,meanAndStdDevCols]
+combinedSubset <- data.table(combined.df[,meanAndStdDevCols])
+```
 
-# calculate the mean for all variables for each subject - activity
-combinedSubset <- data.table(combinedSubset)
+### calculate the mean for all variables for each subject - activity
 
+```{r "summarize at the subjet - activity level"}
 tidyData <- combinedSubset[,lapply(.SD,mean),by=list(SubjectId,ActivityId)]
-
+str(tidyData)
+head(tidyData)
 write.table(tidyData, "tidyData.txt", row.names=FALSE)
-
-a <- str(tidyData)
-a
-
-write.table(a, "strTidyData.txt", row.names=FALSE)
 ```
