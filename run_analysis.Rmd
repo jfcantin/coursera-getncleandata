@@ -1,8 +1,5 @@
 # Getting and cleaning data course project
 
-### TODO:
-* create codebook
-
 ```{r "Initialization"}
 library(knitr)
 opts_chunk$set(cache=FALSE)
@@ -17,7 +14,7 @@ library(data.table)
 ```
 
 ### Download and read data
-```{r "Read Data", cache=TRUE}
+```{r "Read Data"}
 dataReader <- UCIDataReader()
 
 activityLabel <- dataReader$activityLabel 
@@ -31,9 +28,9 @@ testActivity <- dataReader$testActivity
 
 ```
 
-### cleanup feature column names
+### Cleanup feature column names
+Rename column names to be more descriptives
 ```{r}
-# clean up feature names
 setnames(feature, c("Id", "Name"))
 feature$Name <- gsub("^(t)","Time", feature$Name)
 feature$Name <- gsub("^(f)","FreqDomain", feature$Name)
@@ -44,7 +41,6 @@ feature$Name <- gsub("Mag","Magnitude", feature$Name)
 feature$Name <- gsub("Gyro","Gyroscopic", feature$Name)
 feature$Name <- gsub("-mean\\(\\)","-Mean", feature$Name)
 feature$Name <- gsub("-std\\(\\)","-StdDev", feature$Name)
-# angle() fields are not included
 
 ```
 
@@ -82,8 +78,7 @@ combined.df$SubjectId <- as.factor(combined.df$SubjectId)
 ### Subset dataset
 Lots of features were provided by the raw dataset. 
 For this project only the non-axial processed signals are of interest.
-In order to comply with the only one type of date only the Time domain signals is retained.
-
+In order to comply with the "only one type of data in a tidy dataset" only the time domain signals is retained.
 ```{r "subset dataset"}
 # subset to only mean and sd columns of the magnitude features
 meanAndStdDevCols <- which(grepl("^(Time)[[:alnum:]]+Magnitude(-Mean|-StdDev)", colnames(combined.df)))
@@ -92,10 +87,7 @@ combinedSubset <- data.table(combined.df[,meanAndStdDevCols])
 ```
 
 ### calculate the mean for all variables for each subject - activity
-
 ```{r "summarize at the subjet - activity level"}
 tidyData <- combinedSubset[,lapply(.SD,mean),by=list(SubjectId,Activity)]
-str(tidyData)
-head(tidyData)
 write.table(tidyData, "tidyData.txt", row.names=FALSE)
 ```
